@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { Input, VStack, HStack, Text, useColorModeValue } from "@chakra-ui/react";
 
-const TuningOptions = forwardRef(({ title, channel, mb, controller_type }, ref) => {
+const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, ref) => {
     const [pGain, setPGain] = useState('');
     const [iGain, setIGain] = useState('');
     const [dGain, setDGain] = useState('');
@@ -60,16 +60,16 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type }, ref) 
 
             // Make sure to check if the parsed number is a valid number before sending
             if (!isNaN(pGainNumber)) {
-                await updateGain(channel, controller_type, 'p', pGainNumber);
+                await updateGain(channel, controller_type, 'p', pGainNumber, url);
             }
             if (!isNaN(iGainNumber)) {
-                await updateGain(channel, controller_type, 'i', iGainNumber);
+                await updateGain(channel, controller_type, 'i', iGainNumber, url);
             }
             if (!isNaN(dGainNumber)) {
-                await updateGain(channel, controller_type, 'd', dGainNumber);
+                await updateGain(channel, controller_type, 'd', dGainNumber, url);
             }
             if (!isNaN(lpfNumber)) {
-                await updateGain(channel, controller_type, 'lpf', lpfNumber);
+                await updateGain(channel, controller_type, 'lpf', lpfNumber, url);
             }
         } catch (error) {
             console.error('Failed to save PID parameters:', error);
@@ -79,22 +79,22 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type }, ref) 
 
     const loadData = async () => {
         try {
-            const responseP = await fetch(`http://192.168.0.132:8080/ch${channel}/${controller_type}/p`);
+            const responseP = await fetch(`${url}/ch${channel}/${controller_type}/p`);
             const dataP = await responseP.json();
             setPGain(formatValue(dataP.value));
             setPGainInput(formatValue(dataP.value)); // Update the input state as well
 
-            const responseI = await fetch(`http://192.168.0.132:8080/ch${channel}/${controller_type}/i`);
+            const responseI = await fetch(`${url}/ch${channel}/${controller_type}/i`);
             const dataI = await responseI.json();
             setIGain(formatValue(dataI.value));
             setIGainInput(formatValue(dataI.value)); // Update the input state as well
 
-            const responseD = await fetch(`http://192.168.0.132:8080/ch${channel}/${controller_type}/d`);
+            const responseD = await fetch(`${url}/ch${channel}/${controller_type}/d`);
             const dataD = await responseD.json();
             setDGain(formatValue(dataD.value));
             setDGainInput(formatValue(dataD.value)); // Update the input state as well
 
-            const responseLPF = await fetch(`http://192.168.0.132:8080/ch${channel}/${controller_type}/lpf`);
+            const responseLPF = await fetch(`${url}/ch${channel}/${controller_type}/lpf`);
             const dataLPF = await responseLPF.json();
             setLPF(formatValue(dataLPF.value));
             setLPFInput(formatValue(dataLPF.value)); // Update the input state as well
@@ -139,9 +139,9 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type }, ref) 
 export default TuningOptions;
 
 // Helper function to update a gain value
-const updateGain = async (channel, controller_type, gain_type, value) => {
+const updateGain = async (channel, controller_type, gain_type, value, url) => {
     try {
-        const response = await fetch(`http://192.168.0.132:8080/ch${channel}/${controller_type}/${gain_type}`, {
+        const response = await fetch(`${url}/ch${channel}/${controller_type}/${gain_type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

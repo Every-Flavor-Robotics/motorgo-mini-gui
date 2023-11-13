@@ -5,7 +5,7 @@ import {
 } from '@chakra-ui/react';
 import TuningOptions from '../TuningOptions';
 
-const ChannelSelector = () => {
+const ChannelSelector = ({ url }) => {
     const [selectedChannel, setSelectedChannel] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -89,14 +89,14 @@ const ChannelSelector = () => {
                 </TabList>
                 <TabPanels>
                     <TabPanel px={4} pt={4}>
-                        <TuningOptions ref={ch0PositionRef} title="Position Controller" channel={0} controller_type={"position"} mb={4} />
-                        <TuningOptions ref={ch0VelocityRef} title="Velocity Controller" channel={0} controller_type={"velocity"} mb={4} />
-                        <TuningOptions ref={ch0TorqueRef} title="Torque Controller" channel={0} controller_type={"current"} />
+                        <TuningOptions ref={ch0PositionRef} title="Position Controller" url={url} channel={0} controller_type={"position"} mb={4} />
+                        <TuningOptions ref={ch0VelocityRef} title="Velocity Controller" url={url} channel={0} controller_type={"velocity"} mb={4} />
+                        <TuningOptions ref={ch0TorqueRef} title="Torque Controller" url={url} channel={0} controller_type={"current"} />
                     </TabPanel>
                     <TabPanel px={4} pt={4}>
-                        <TuningOptions ref={ch1PositionRef} title="Position Controller" channel={1} controller_type={"position"} mb={4} />
-                        <TuningOptions ref={ch1VelocityRef} title="Velocity Controller" channel={1} controller_type={"velocity"} mb={4} />
-                        <TuningOptions ref={ch1TorqueRef} title="Torque Controller" channel={1} controller_type={"current"} />
+                        <TuningOptions ref={ch1PositionRef} title="Position Controller" url={url} channel={1} controller_type={"position"} mb={4} />
+                        <TuningOptions ref={ch1VelocityRef} title="Velocity Controller" url={url} channel={1} controller_type={"velocity"} mb={4} />
+                        <TuningOptions ref={ch1TorqueRef} title="Torque Controller" url={url} channel={1} controller_type={"current"} />
                     </TabPanel>
                 </TabPanels>
             </Tabs>

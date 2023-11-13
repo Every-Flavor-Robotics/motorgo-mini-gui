@@ -1,6 +1,7 @@
 {
     "name": "motor-controller-gui",
     "version": "0.1.0",
+    "author": "EFR <everyflavorrobotics@gmail.com>",
     "private": true,
     "dependencies": {
         "@chakra-ui/react": "^2.8.1",
@@ -11,21 +12,22 @@
         "@testing-library/user-event": "^13.5.0",
         "electron-is-dev": "^2.0.0",
         "framer-motion": "^10.16.4",
+        "nanoid": "^5.0.3",
         "react": "^18.2.0",
         "react-chartjs-2": "^5.2.0",
         "react-dom": "^18.2.0",
-        "react-scripts": "5.0.1",
         "web-vitals": "^2.1.4"
     },
     "main": "electron.js",
     "scripts": {
-        "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "start": "concurrently \"cross-env BROWSER=none npm run start-react\" \"npm:wait-react && npm run start-electron\"",
         "start-react": "react-scripts start",
         "start-electron": "./node_modules/.bin/electron .",
-        "wait-react": "wait-on http://localhost:3000"
+        "wait-react": "wait-on http://localhost:3000",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
     },
     "eslintConfig": {
         "extends": [
@@ -51,5 +53,23 @@
         "electron": "^27.0.2",
         "electron-builder": "^24.6.4",
         "wait-on": "^7.0.1"
+    },
+    "build": {
+        "appId": "com.motorgo-mini.motor-controller-gui",
+        "productName": "Motor Go Mini GUI",
+        "extends": null,
+        "mac": {
+            "category": "Utility",
+            "target": "dmg"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": [
+                "AppImage",
+                "deb"
+            ]
+        }
     }
 }
