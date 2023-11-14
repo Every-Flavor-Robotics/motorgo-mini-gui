@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChakraProvider, Flex, Input, Button, HStack, useToast } from "@chakra-ui/react";
 import ChannelSelector from './components/ChannelSelector';
 import ResponsePlotter from './components/ResponsePlotter';
+import StepConfig from './components/StepConfig';
 import { nanoid } from 'nanoid';
 
 function App() {
@@ -103,8 +104,9 @@ function App() {
                         <Flex flex="1" borderRightWidth="2px" borderRightColor="gray.200" p={4} direction="column" alignItems="stretch" boxSizing="border-box">
                             <ChannelSelector url={dataSourceUrl} />
                         </Flex>
-                        <Flex flex="1" p={4} alignItems="stretch" justifyContent="center">
+                        <Flex flex="1" direction="column" p={4} alignItems="stretch" justifyContent="center">
                             <ResponsePlotter data={dummyData} url={dataSourceUrl} />
+                            <StepConfig url={dataSourceUrl} />
                         </Flex>
                     </Flex>
                 )}

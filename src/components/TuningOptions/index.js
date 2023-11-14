@@ -140,6 +140,7 @@ export default TuningOptions;
 
 // Helper function to update a gain value
 const updateGain = async (channel, controller_type, gain_type, value, url) => {
+    console.log(controller_type, gain_type);
     try {
         const response = await fetch(`${url}/ch${channel}/${controller_type}/${gain_type}`, {
             method: 'POST',
