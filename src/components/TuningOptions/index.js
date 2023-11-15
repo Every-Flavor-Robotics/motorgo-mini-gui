@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { Input, VStack, HStack, Text, useColorModeValue } from "@chakra-ui/react";
+import { Input, VStack, HStack, Text, Button, useColorModeValue, useToast, Spinner } from "@chakra-ui/react";
 
 const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, ref) => {
     const [pGain, setPGain] = useState('');
@@ -7,12 +7,16 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
     const [dGain, setDGain] = useState('');
     const [lpf, setLPF] = useState('');
 
+    const [isLoading, setIsLoading] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
     // State to keep track of the input values before formatting
     const [pGainInput, setPGainInput] = useState('');
     const [iGainInput, setIGainInput] = useState('');
     const [dGainInput, setDGainInput] = useState('');
     const [lpfInput, setLPFInput] = useState('');
 
+    const toast = useToast();
     const bgColor = useColorModeValue("gray.100", "gray.700");
     const borderColor = useColorModeValue("gray.200", "gray.600");
 
@@ -49,59 +53,91 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
         }
     };
 
-    const saveData = async () => {
-        // Set the loading state here if you have one
+    const handleOperation = async (operation, operationStateSetter, operationName) => {
+        operationStateSetter(true);
         try {
-            // Parse the input state to a float before sending
-            const pGainNumber = parseFloat(pGainInput);
-            const iGainNumber = parseFloat(iGainInput);
-            const dGainNumber = parseFloat(dGainInput);
-            const lpfNumber = parseFloat(lpfInput);
-
-            // Make sure to check if the parsed number is a valid number before sending
-            if (!isNaN(pGainNumber)) {
-                await updateGain(channel, controller_type, 'p', pGainNumber, url);
-            }
-            if (!isNaN(iGainNumber)) {
-                await updateGain(channel, controller_type, 'i', iGainNumber, url);
-            }
-            if (!isNaN(dGainNumber)) {
-                await updateGain(channel, controller_type, 'd', dGainNumber, url);
-            }
-            if (!isNaN(lpfNumber)) {
-                await updateGain(channel, controller_type, 'lpf', lpfNumber, url);
-            }
+            await operation();
+            toast({
+                title: `${operationName} Successful`,
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+            });
         } catch (error) {
-            console.error('Failed to save PID parameters:', error);
+            console.error(`${operationName} failed:`, error);
+            toast({
+                title: `${operationName} Failed`,
+                description: error.message,
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            operationStateSetter(false);
         }
-        // Unset the loading state here
     };
 
     const loadData = async () => {
         try {
-            const responseP = await fetch(`${url}/ch${channel}/${controller_type}/p`);
-            const dataP = await responseP.json();
-            setPGain(formatValue(dataP.value));
-            setPGainInput(formatValue(dataP.value)); // Update the input state as well
+            const response = await fetch(`${url}`);
+            if (response.ok) {
+                const data = await response.json();
+                const values = data.value;
 
-            const responseI = await fetch(`${url}/ch${channel}/${controller_type}/i`);
-            const dataI = await responseI.json();
-            setIGain(formatValue(dataI.value));
-            setIGainInput(formatValue(dataI.value)); // Update the input state as well
+                console.log(data);
 
-            const responseD = await fetch(`${url}/ch${channel}/${controller_type}/d`);
-            const dataD = await responseD.json();
-            setDGain(formatValue(dataD.value));
-            setDGainInput(formatValue(dataD.value)); // Update the input state as well
-
-            const responseLPF = await fetch(`${url}/ch${channel}/${controller_type}/lpf`);
-            const dataLPF = await responseLPF.json();
-            setLPF(formatValue(dataLPF.value));
-            setLPFInput(formatValue(dataLPF.value)); // Update the input state as well
+                setPGain(formatValue(values.p));
+                setPGainInput(formatValue(values.p));
+                setIGain(formatValue(values.i));
+                setIGainInput(formatValue(values.i));
+                setDGain(formatValue(values.d));
+                setDGainInput(formatValue(values.d));
+                setLPF(formatValue(values.lpf_time_constant));
+                setLPFInput(formatValue(values.lpf_time_constant));
+                // Handle other parameters similarly
+            } else {
+                throw new Error('Failed to load PID parameters');
+            }
         } catch (error) {
             console.error('Failed to load PID parameters:', error);
         }
     };
+
+    const saveData = async () => {
+        try {
+            const payload = {
+                p: parseFloat(pGainInput),
+                i: parseFloat(iGainInput),
+                d: parseFloat(dGainInput),
+                lpf_time_constant: parseFloat(lpfInput),
+                // Include other parameters as needed
+            };
+            console.log(JSON.stringify({ "value": payload }));
+
+            const response = await fetch(`${url}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "value": payload })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save PID parameters: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Failed to save PID parameters:', error);
+        }
+    };
+
+    useEffect(() => {
+        handleOperation(loadData, setIsLoading, 'Load Parameters');
+    }, [url]); // Dependency array
+
+    useImperativeHandle(ref, () => ({
+        saveData: () => handleOperation(saveData, setIsUpdating, 'Save Parameters'),
+        loadData: () => handleOperation(loadData, setIsLoading, 'Load Parameters')
+    }));
 
     return (
         <VStack spacing={4} align="start" bg={bgColor} p={5} borderRadius="md" border="1px" borderColor={borderColor} mb={mb} w="100%" boxShadow="md">
@@ -131,6 +167,16 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
                         />
                     </VStack>
                 ))}
+            </HStack>
+            <HStack spacing={4} mt={4}>
+                <Button colorScheme="blue" onClick={() => handleOperation(loadData, setIsLoading, 'Load Parameters')}
+                    isLoading={isLoading} loadingText="Loading...">
+                    Pull Parameters
+                </Button>
+                <Button colorScheme="green" onClick={() => handleOperation(saveData, setIsUpdating, 'Save Parameters')}
+                    isLoading={isUpdating} loadingText="Saving...">
+                    Push Parameters
+                </Button>
             </HStack>
         </VStack>
     );

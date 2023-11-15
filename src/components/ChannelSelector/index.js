@@ -1,16 +1,42 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-    Box, Tabs, TabList, Tab, TabPanels, TabPanel,
-    Button, HStack, useColorModeValue, Spinner, useToast
+    Box, VStack, Button, HStack, useColorModeValue, Spinner, useToast
 } from '@chakra-ui/react';
 import TuningOptions from '../TuningOptions';
 
 const ChannelSelector = ({ url }) => {
+    const [controllers, setControllers] = useState([]);
     const [selectedChannel, setSelectedChannel] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const tabBgColor = useColorModeValue("gray.100", "gray.700");
     const toast = useToast(); // Initialize the toast hook
+
+    useEffect(() => {
+        // Fetch the schema when the component mounts
+        const fetchSchema = async () => {
+            try {
+                const response = await fetch(`${url}/pid/schema`);
+                if (response.ok) {
+                    const schema = await response.json();
+                    console.log(schema);
+                    setControllers(schema.value); // Assume the schema has a "value" key that holds an array
+                } else {
+                    throw new Error('Failed to fetch PID schema');
+                }
+            } catch (error) {
+                toast({
+                    title: "Failed to fetch.",
+                    description: error.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+        };
+
+        fetchSchema();
+    }, [url, toast]);
 
     // Create refs for each TuningOptions instance
     const ch0PositionRef = useRef();
@@ -81,45 +107,35 @@ const ChannelSelector = ({ url }) => {
     };
 
     return (
-        <Box my={4} borderRadius="md" overflow="hidden">
-            <Tabs onChange={handleTabChange} variant="enclosed" isFitted bg={tabBgColor}>
-                <TabList borderBottom="2px solid" borderColor="orange.800">
-                    <Tab _selected={{ bg: 'orange.800', color: 'white' }}>Channel 0</Tab>
-                    <Tab _selected={{ bg: 'orange.800', color: 'white' }}>Channel 1</Tab>
-                </TabList>
-                <TabPanels>
-                    <TabPanel px={4} pt={4}>
-                        <TuningOptions ref={ch0PositionRef} title="Position Controller" url={url} channel={0} controller_type={"position"} mb={4} />
-                        <TuningOptions ref={ch0VelocityRef} title="Velocity Controller" url={url} channel={0} controller_type={"velocity"} mb={4} />
-                        <TuningOptions ref={ch0TorqueRef} title="Torque Controller" url={url} channel={0} controller_type={"current"} />
-                    </TabPanel>
-                    <TabPanel px={4} pt={4}>
-                        <TuningOptions ref={ch1PositionRef} title="Position Controller" url={url} channel={1} controller_type={"position"} mb={4} />
-                        <TuningOptions ref={ch1VelocityRef} title="Velocity Controller" url={url} channel={1} controller_type={"velocity"} mb={4} />
-                        <TuningOptions ref={ch1TorqueRef} title="Torque Controller" url={url} channel={1} controller_type={"current"} />
-                    </TabPanel>
-                </TabPanels>
-            </Tabs>
-            <HStack spacing={4} mt={4} justifyContent="center">
-                <Button
-                    leftIcon={isLoading ? <Spinner size="sm" /> : null}
-                    colorScheme="blue"
-                    onClick={loadAll}
-                    isLoading={isLoading}
-                    loadingText="Loading..."
-                >
-                    Load Parameters
-                </Button>
-                <Button
-                    leftIcon={isUpdating ? <Spinner size="sm" /> : null}
-                    colorScheme="green"
-                    onClick={saveAll}
-                    isLoading={isUpdating}
-                    loadingText="Updating..."
-                >
-                    Update Parameters
-                </Button>
-            </HStack>
+        <Box my={4} p={4}>
+            <VStack spacing={4}>
+                {controllers.map(controller => (
+                    <TuningOptions
+                        key={controller.endpoint}
+                        title={controller.name}
+                        url={`${url}${controller.endpoint}`}
+                        mb={4}
+                    />
+                ))}
+            </VStack>
+            {/* <Button
+                onClick={loadAll}
+                isLoading={isLoading}
+                loadingText="Loading..."
+                colorScheme="blue"
+                my={4}
+            >
+                Load Parameters
+            </Button> */}
+            {/* <Button
+                onClick={saveAll}
+                isLoading={isUpdating}
+                loadingText="Loading..."
+                colorScheme="green"
+                my={4}
+            >
+                Load Parameters
+            </Button> */}
         </Box>
     );
 };
