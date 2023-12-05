@@ -1,5 +1,6 @@
 {
     "name": "motor-controller-gui",
+    "homepage": "https://every-flavor-robotics.github.io/motorgo-mini-gui/",
     "version": "0.1.0",
     "author": "EFR <everyflavorrobotics@gmail.com>",
     "private": true,
@@ -23,12 +24,15 @@
     "scripts": {
         "test": "react-scripts test",
         "eject": "react-scripts eject",
+        "build": "react-scripts build",
         "start": "concurrently \"cross-env BROWSER=none npm run start-react\" \"npm:wait-react && npm run start-electron\"",
         "start-react": "react-scripts start",
         "start-electron": "./node_modules/.bin/electron .",
         "wait-react": "wait-on http://localhost:3000",
         "pack": "electron-builder --dir",
-        "dist": "electron-builder"
+        "dist": "electron-builder",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d build"
     },
     "eslintConfig": {
         "extends": [
@@ -53,6 +57,7 @@
         "cross-env": "^7.0.3",
         "electron": "^27.0.2",
         "electron-builder": "^24.6.4",
+        "gh-pages": "^6.1.0",
         "wait-on": "^7.0.1"
     },
     "build": {
