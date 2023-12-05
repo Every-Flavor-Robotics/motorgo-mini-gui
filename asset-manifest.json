@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/motorgo-mini-gui/static/css/main.e6c13ad2.css",
+    "main.js": "/motorgo-mini-gui/static/js/main.a8e67657.js",
+    "static/js/787.574c63b3.chunk.js": "/motorgo-mini-gui/static/js/787.574c63b3.chunk.js",
+    "index.html": "/motorgo-mini-gui/index.html",
+    "main.e6c13ad2.css.map": "/motorgo-mini-gui/static/css/main.e6c13ad2.css.map",
+    "main.a8e67657.js.map": "/motorgo-mini-gui/static/js/main.a8e67657.js.map",
+    "787.574c63b3.chunk.js.map": "/motorgo-mini-gui/static/js/787.574c63b3.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.a8e67657.js"
+  ]
+}
