@@ -1,5 +1,5 @@
-import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { Input, VStack, HStack, Text, Button, useColorModeValue, useToast, Spinner } from "@chakra-ui/react";
+import React, { forwardRef, useImperativeHandle, useState, useEffect, useCallback } from 'react';
+import { Input, VStack, HStack, Text, Button, useColorModeValue, useToast } from "@chakra-ui/react";
 
 const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, ref) => {
     const [pGain, setPGain] = useState('');
@@ -27,57 +27,7 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
         }
     };
 
-    // Call this function when the input is blurred
-    const handleBlur = (setter, inputValue, setInputChange) => {
-        const formattedValue = formatValue(inputValue);
-        setter(formattedValue); // Set the state with the formatted value
-        setInputChange(formattedValue); // Also update the input state to display the formatted value
-    };
-
-    useEffect(() => {
-        loadData();
-    }, [channel, controller_type]); // Dependency array, so it only runs once when the component mounts or if channel changes
-
-    // Expose the save and load methods to the parent component
-    useImperativeHandle(ref, () => ({
-        saveData,
-        loadData
-    }));
-
-    const handleInputChange = (setter, value) => {
-        const number = parseFloat(value); // Convert the input value to a float
-        if (!isNaN(number)) { // Check if the conversion was successful
-            setter(number); // If successful, update the state with the float number
-        } else {
-            setter(''); // If conversion failed (e.g., empty string), reset the state
-        }
-    };
-
-    const handleOperation = async (operation, operationStateSetter, operationName) => {
-        operationStateSetter(true);
-        try {
-            await operation();
-            toast({
-                title: `${operationName} Successful`,
-                status: 'success',
-                duration: 5000,
-                isClosable: true,
-            });
-        } catch (error) {
-            console.error(`${operationName} failed:`, error);
-            toast({
-                title: `${operationName} Failed`,
-                description: error.message,
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        } finally {
-            operationStateSetter(false);
-        }
-    };
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         try {
             const response = await fetch(`${url}`);
             if (response.ok) {
@@ -101,7 +51,59 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
         } catch (error) {
             console.error('Failed to load PID parameters:', error);
         }
+    }, [url]); // Include 'url' as a dependency
+
+    // Call this function when the input is blurred
+    const handleBlur = (setter, inputValue, setInputChange) => {
+        const formattedValue = formatValue(inputValue);
+        setter(formattedValue); // Set the state with the formatted value
+        setInputChange(formattedValue); // Also update the input state to display the formatted value
     };
+
+    useEffect(() => {
+        loadData();
+    }, [channel, controller_type, loadData]); // Dependency array, so it only runs once when the component mounts or if channel changes
+
+    // Expose the save and load methods to the parent component
+    useImperativeHandle(ref, () => ({
+        saveData,
+        loadData
+    }));
+
+    // const handleInputChange = (setter, value) => {
+    //     const number = parseFloat(value); // Convert the input value to a float
+    //     if (!isNaN(number)) { // Check if the conversion was successful
+    //         setter(number); // If successful, update the state with the float number
+    //     } else {
+    //         setter(''); // If conversion failed (e.g., empty string), reset the state
+    //     }
+    // };
+
+    const handleOperation = useCallback(async (operation, operationStateSetter, operationName) => {
+        operationStateSetter(true);
+        try {
+            await operation();
+            toast({
+                title: `${operationName} Successful`,
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+            });
+        } catch (error) {
+            console.error(`${operationName} failed:`, error);
+            toast({
+                title: `${operationName} Failed`,
+                description: error.message,
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            operationStateSetter(false);
+        }
+    }, [toast]);
+
+
 
     const saveData = async () => {
         try {
@@ -132,7 +134,7 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
 
     useEffect(() => {
         handleOperation(loadData, setIsLoading, 'Load Parameters');
-    }, [url]); // Dependency array
+    }, [url, loadData, handleOperation]); // Dependency array
 
     useImperativeHandle(ref, () => ({
         saveData: () => handleOperation(saveData, setIsUpdating, 'Save Parameters'),
@@ -185,21 +187,21 @@ const TuningOptions = forwardRef(({ title, channel, mb, controller_type, url }, 
 export default TuningOptions;
 
 // Helper function to update a gain value
-const updateGain = async (channel, controller_type, gain_type, value, url) => {
-    console.log(controller_type, gain_type);
-    try {
-        const response = await fetch(`${url}/ch${channel}/${controller_type}/${gain_type}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ value })
-        });
+// const updateGain = async (channel, controller_type, gain_type, value, url) => {
+//     console.log(controller_type, gain_type);
+//     try {
+//         const response = await fetch(`${url}/ch${channel}/${controller_type}/${gain_type}`, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({ value })
+//         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    } catch (error) {
-        console.error(`Failed to update ${gain_type} gain:`, error);
-    }
-};
+//         if (!response.ok) {
+//             throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+//     } catch (error) {
+//         console.error(`Failed to update ${gain_type} gain:`, error);
+//     }
+// };
