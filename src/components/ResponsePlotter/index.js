@@ -32,22 +32,22 @@ const ResponsePlotter = ({ data }) => {
         }))
     };
 
-    // const options = {
-    //     scales: {
-    //         y: {
-    //             beginAtZero: true,
-    //         }
-    //     },
-    //     plugins: {
-    //         legend: {
-    //             display: true,
-    //             position: 'top',
-    //         },
-    //         tooltip: {
-    //             enabled: true,
-    //         }
-    //     }
-    // };
+    const options = {
+        scales: {
+            y: {
+                beginAtZero: true,
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            },
+            tooltip: {
+                enabled: true,
+            }
+        }
+    };
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
