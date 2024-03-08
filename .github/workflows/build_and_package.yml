@@ -1,35 +1,68 @@
 name: Build/release
 
 on:
+  push:
+    branches:
+      - feature-7/auto-tag
   pull_request:
     branches:
       - main
     types: [closed]
 
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
+  tag-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v1
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+      - name: Install dependencies
+        run: sudo apt-get install -y jq
+      - name: Get version from package.json
+        id: get_version
+        run: echo ::set-env name=PACKAGE_VERSION::$(cat package.json | jq .version | tr -d '"')
+      - uses: actions/checkout@v3
         with:
-          node-version: 21.1.0
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1.6.0
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+      - name: Bump version and push tag
+        id: tag_action
+        uses: anothrNick/github-tag-action@1.64.0 # Don't use @master or @v1 unless you're happy to test the latest version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+          WITH_V: true
+          PRERELEASE: true
+          DRY_RUN: true
+          CUSTOM_TAG: v${{ steps.get_version.outputs.PACKAGE_VERSION }}
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      - name: Print tag action output
+        run: |
+          echo "New Tag: ${{ steps.tag_action.outputs.new_tag }}"
+          echo "Existing Tag (if any): ${{ steps.tag_action.outputs.tag }}"
+
+  # release:
+  #   needs: tag-commit
+  #   runs-on: ${{ matrix.os }}
+
+  #   strategy:
+  #     matrix:
+  #       os: [macos-latest, ubuntu-latest, windows-latest]
+
+  #   steps:
+  #     - name: Check out Git repository
+  #       uses: actions/checkout@v1
+
+  #     - name: Install Node.js, NPM and Yarn
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 21.1.0
+
+  #     - name: Build/release Electron app
+  #       uses: samuelmeuli/action-electron-builder@v1.6.0
+  #       with:
+  #         # GitHub token, automatically provided to the action
+  #         # (No need to define this secret in the repo settings)
+  #         github_token: ${{ secrets.github_token }}
+
+  #         # If the commit is tagged with a version (e.g. "v1.0.0"),
+  #         # release the app after building
+  #         release: ${{ startsWith(github.ref, 'refs/tags/v') }}
