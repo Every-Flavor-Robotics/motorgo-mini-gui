@@ -19,7 +19,9 @@ jobs:
         run: sudo apt-get install -y jq
       - name: Get version from package.json
         id: get_version
-        run: echo ::set-env name=PACKAGE_VERSION::$(cat package.json | jq .version | tr -d '"')
+        run: |
+          version=$(cat package.json | jq .version | tr -d '"')
+          echo "::set-output name=package_version::$version"
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
@@ -32,7 +34,7 @@ jobs:
           WITH_V: true
           PRERELEASE: true
           DRY_RUN: true
-          CUSTOM_TAG: v${{ steps.get_version.outputs.PACKAGE_VERSION }}
+          CUSTOM_TAG: v${{ steps.get_version.outputs.package_version }}
 
       - name: Print tag action output
         run: |
