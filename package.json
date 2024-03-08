@@ -1,6 +1,6 @@
 {
     "name": "motor-controller-gui",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "author": "EFR <everyflavorrobotics@gmail.com>",
     "private": true,
     "dependencies": {
@@ -23,7 +23,7 @@
     "scripts": {
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "build": "react-scripts build",
+        "build": "PUBLIC_URL=./ react-scripts build",
         "start": "concurrently \"cross-env BROWSER=none npm run start-react\" \"npm:wait-react && npm run start-electron\"",
         "start-react": "react-scripts start",
         "start-electron": "cross-env ./node_modules/.bin/electron .",
