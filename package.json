@@ -1,7 +1,7 @@
 {
     "name": "motor-controller-gui",
     "version": "0.1.0",
-    "author": "EFR <everyflavorrobotics@gmail.com>",
+    "author": "MotorGo <support@motorgo.net>",
     "private": true,
     "dependencies": {
         "@chakra-ui/react": "^2.8.1",
