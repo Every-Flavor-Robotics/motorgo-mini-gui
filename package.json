@@ -23,13 +23,12 @@
     "scripts": {
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "build": "react-scripts build",
         "start": "concurrently \"cross-env BROWSER=none npm run start-react\" \"npm:wait-react && npm run start-electron\"",
         "start-react": "react-scripts start",
-        "start-electron": "cross-env ./node_modules/.bin/electron .",
+        "start-electron": "./node_modules/.bin/electron .",
         "wait-react": "wait-on http://localhost:3000",
         "pack": "electron-builder --dir",
-        "dist": "PUBLIC_URL=./ npm run build && electron-builder"
+        "dist": "electron-builder"
     },
     "eslintConfig": {
         "extends": [
@@ -57,14 +56,9 @@
         "wait-on": "^7.0.1"
     },
     "build": {
-        "files": [
-            "build/**/*",
-            "electron.js",
-            "node_modules/**/*"
-        ],
-        "extends": null,
         "appId": "com.motorgo-mini.motor-controller-gui",
         "productName": "Motor Go Mini GUI",
+        "extends": null,
         "mac": {
             "category": "Utility",
             "target": "dmg"
