@@ -10,6 +10,7 @@ import { nanoid } from 'nanoid';
 function App() {
     const [dataSourceUrl, setDataSourceUrl] = useState('');
     const [sessionId, setSessionId] = useState('');
+    console.log('Session ID:', sessionId);
     const [isConnected, setIsConnected] = useState(false); // Add a state to track connection status
     const [isConnecting, setIsConnecting] = useState(false); // State to manage connection loading status
     const toast = useToast();
